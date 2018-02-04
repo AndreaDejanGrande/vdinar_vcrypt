@@ -1,11 +1,11 @@
 from distutils.core import setup, Extension
 
-ltc_scrypt_module = Extension('ltc_scrypt',
-                               sources = ['scryptmodule.c',
-                                          'scrypt.c'],
+vdn_vcrypt_module = Extension('vdn_vcrypt',
+                               sources = ['vcryptmodule.c',
+                                          'vcrypt.c'],
                                include_dirs=['.'])
 
-setup (name = 'ltc_scrypt',
+setup (name = 'vdn_vcrypt',
        version = '1.0',
-       description = 'Bindings for scrypt proof of work used by Litecoin',
-       ext_modules = [ltc_scrypt_module])
+       description = 'Bindings for vCrypt proof of work used by vDinar',
+       ext_modules = [vdn_vcrypt_module])

@@ -678,7 +678,7 @@ void vcrypt_1_1_256(const char* input, char* output, uint32_t N)
     
     // align on 4 byte boundary
     scratchpad = (char*)malloc(128*N + 512);
-        scrypt_N_1_1_256_sp(input, output, scratchpad, N);
+        vcrypt_N_1_1_256_sp(input, output, scratchpad, N);
     free(scratchpad);
 }
 

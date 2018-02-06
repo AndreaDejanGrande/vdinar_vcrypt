@@ -643,7 +643,48 @@ smix(uint8_t * B, size_t r, uint64_t N, uint32_t * V, uint32_t * XY)
 /* cpu and memory intensive function to transform a 80 byte buffer into a 32 byte output
    scratchpad size needs to be at least 63 + (128 * r * p) + (256 * r + 64) + (128 * r * N) bytes
  */
-void vcrypt_1_1_256_sp(const char* input, char* output, char* scratchpad, uint32_t n)
+void vcrypt_1_1_256_sp(const char* input, char* output, char* scratchpad, uint32_t N)
+{
+	uint8_t * B;
+	uint32_t * V;
+	uint32_t * XY;
+	uint32_t i;
+
+	//const uint32_t N = 1024;
+	const uint32_t r = 1;
+	const uint32_t p = 1;
+
+	B = (uint8_t *)(((uintptr_t)(scratchpad) + 63) & ~ (uintptr_t)(63));
+	XY = (uint32_t *)(B + (128 * r * p));
+	V = (uint32_t *)(B + (128 * r * p) + (256 * r + 64));
+
+	/* 1: (B_0 ... B_{p-1}) <-- PBKDF2(P, S, 1, p * MFLen) */
+	PBKDF2_SHA256((const uint8_t*)input, 80, (const uint8_t*)input, 80, 1, B, p * 128 * r);
+
+	/* 2: for i = 0 to p - 1 do */
+	for (i = 0; i < p; i++) {
+		/* 3: B_i <-- MF(B_i, N) */
+		smix(&B[i * 128 * r], r, N, V, XY);
+	}
+
+	/* 5: DK <-- PBKDF2(P, B, 1, dkLen) */
+	PBKDF2_SHA256((const uint8_t*)input, 80, B, p * 128 * r, 1, (uint8_t*)output, 32);
+}
+
+void vcrypt_1_1_256(const char* input, char* output, uint32_t N)
+{
+        //char scratchpad[131583];
+    char *scratchpad;
+    
+    // align on 4 byte boundary
+    scratchpad = (char*)malloc(128*N + 512);
+        scrypt_N_1_1_256_sp(input, output, scratchpad, N);
+    free(scratchpad);
+}
+
+
+//ORIGINAL vDinar FUNCTION
+/*void vcrypt_1_1_256_sp(const char* input, char* output, char* scratchpad, uint32_t n)
 {
 	uint8_t B[128];
 	uint32_t X[32];
@@ -690,5 +731,4 @@ void vcrypt_1_1_256(const char* input, char* output, uint32_t n)
 {
 	char scratchpad[(n * 128) + 63];
 	vcrypt_1_1_256_sp(input, output, scratchpad, n);
-}
-
+}*/
